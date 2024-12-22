@@ -32,14 +32,20 @@ delete_old_data() {
 # Function to download the latest miner binary
 download_miner() {
     process_message "Downloading the latest mining-cli binary"
-    sudo apt install -y wget unzip
+
+    # Ensure necessary tools are installed
+    sudo apt update
+    sudo apt install -y wget unzip jq
 
     # Fetch the latest release information from GitHub API
     LATEST_RELEASE=$(curl -s https://api.github.com/repos/InternetMaximalism/intmax2-mining-cli/releases/latest)
-    DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | grep "browser_download_url.*mining-cli-x86_64-unknown-linux-gnu.zip" | cut -d '"' -f 4)
 
+    # Extract the download URL for the Linux binary using jq
+    DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name == "mining-cli-x86_64-unknown-linux-gnu.zip") | .browser_download_url')
+
+    # Check if the download URL was successfully extracted
     if [ -z "$DOWNLOAD_URL" ]; then
-        echo "Failed to fetch the latest release URL. Exiting."
+        echo "❌ Failed to fetch the latest release URL. Exiting."
         exit 1
     fi
 
@@ -48,8 +54,9 @@ download_miner() {
     unzip -o "$HOME_DIR/mining-cli.zip" -d "$HOME_DIR/"
     chmod +x "$HOME_DIR/mining-cli"
     rm "$HOME_DIR/mining-cli.zip"
-    echo "Download and extraction complete."
+    echo "✅ Download and extraction complete."
 }
+
 
 # Function to configure environment variables
 configure_environment() {
