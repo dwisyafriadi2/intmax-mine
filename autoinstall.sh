@@ -58,6 +58,7 @@ download_miner() {
 }
 
 
+
 # Function to configure environment variables
 configure_environment() {
     process_message "Configuring environment variables"
